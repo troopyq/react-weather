@@ -84,6 +84,13 @@ function App() {
 
   function getGeolocation() {
 
+    if ("geolocation" in navigator){
+      console.log('geo true');
+    } else {
+      console.log('geo false');
+
+    }
+
      navigator.geolocation.getCurrentPosition(pos => {
        console.log(pos);
       const crd = pos.coords
@@ -109,6 +116,7 @@ function App() {
         type: 'SET_POSITION',
         payload: {}
       })
+      getWeather({})
       // setPosition({})
     }, { 
       enableHighAccuracy: true,
