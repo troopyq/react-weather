@@ -10,6 +10,8 @@
   flex-direction: column;
   justify-content: center;
   align-items: center;
+  perspective: 100px;
+  transform-style: flat;
 }
 
 body {
@@ -19,6 +21,7 @@ body {
   background-color: rgb(90, 154, 228);
   font-size: 18px;
   color: #222;
+  overflow: hidden;
 }
 
 .window {
@@ -34,6 +37,11 @@ body {
   padding: 20px;
   border-radius: 20px;
   box-shadow: 0 3px 15px rgba(0, 0, 0, 0.22);
+
+  transform-origin: bottom;
+  perspective: 850px;
+  perspective-origin: left center;
+  animation: fadeInWindow 1.2s ease-in-out forwards;
 }
 .input__city {
   text-transform: uppercase;
@@ -59,6 +67,10 @@ body {
   }
 }
 .city {
+  min-height: 30px;
+  width: 80%;
+  text-align: center;
+  line-height: 30px;
   font-size: 20px;
   font-weight: 600;
   margin: 20px 0;
@@ -66,6 +78,7 @@ body {
   color: rgb(255, 255, 255);
   text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
   opacity: 0.85;
+  animation: fadeInCity 1.5s ease-in-out forwards;
 }
 
 .temperature {
@@ -87,5 +100,48 @@ body {
     position: absolute;
     top: 0px;
     right: -32px;
+  }
+}
+.description {
+  min-height: 30px;
+  width: 80%;
+  text-align: center;
+  line-height: 30px;
+  font-size: 20px;
+  font-weight: 600;
+  margin: 5px 0 10px;
+  text-transform: uppercase;
+  color: rgb(255, 255, 255);
+  text-shadow: 0 1px 3px rgba(0, 0, 0, 0.3);
+  opacity: 0.85;
+}
+
+.weath {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.icon {
+  img {
+    width: 120px;
+  }
+}
+
+@keyframes fadeInCity {
+  0% {
+    opacity: 0;
+  }
+  100% {
+    opacity: 0.85;
+  }
+}
+@keyframes fadeInWindow {
+  0% {
+    // opacity: 0;
+    transform: scale(0.9) rotate3d(1, 0, 0, 8deg);
+  }
+  100% {
+    // opacity: 1;
+    transform: scale(1) rotate3d(1, 0, 0, 0deg);
   }
 }

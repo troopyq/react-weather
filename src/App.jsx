@@ -1,16 +1,80 @@
+import { useEffect, useReducer, useState } from "react";
 import axios from "axios";
-import { useEffect, useState } from "react";
+import reducer from './reducer'
+
+import AnimatedNumber from "react-animated-numbers"
 
 import './scss/App.scss'
 
 
 
 function App() {
-  
-  const [city, setCity] = useState('Not found');
-  const [temperature, setTemperature] = useState(0)
-  const [inpCity, setInpCity] = useState('')
-  const [position, setPosition] = useState({})
+
+  const [state, dispatch] = useReducer(reducer, {
+    city: '',
+    temperature: 0,
+    inpCity: '',
+    position: {},
+    isLoading: {},
+    weather: {
+    }
+  })
+
+  function getIcon(data) {
+    const hours = new Date(data.dt).getHours()
+    let path = './img/weather_icons/animated/'
+
+    if (hours < 20 && hours >= 6) {
+      switch (data.main) {
+        case 'Thunderstorm':
+          return path + 'thunder.svg'
+      
+        case 'Drizzle':
+          return path + 'rainy-4.svg'
+      
+        case 'Rain':
+          return path + 'rainy-6.svg'
+      
+        case 'Snow':
+          return path + 'snowy-5.svg'
+      
+        case 'Clear':
+          return path + 'day.svg'
+      
+        case 'Clouds':
+          return path + 'cloudy.svg'
+      
+        default:
+          return ''
+      }
+    } else{
+      switch (data.main) {
+        case 'Thunderstorm':
+          return path + 'thunder.svg'
+      
+        case 'Drizzle':
+          return path + 'rainy-4.svg'
+      
+        case 'Rain':
+          return path + 'rainy-6.svg'
+      
+        case 'Snow':
+          return path + 'snowy-5.svg'
+      
+        case 'Clear':
+          return path + 'night.svg'
+      
+        case 'Clouds':
+          return path + 'cloudy-night-3.svg'
+      
+        default:
+          return ''
+      }
+    }
+
+    
+    
+  }
   
 
   function toCelcius(temp) {
@@ -19,39 +83,51 @@ function App() {
   }
 
   function getGeolocation() {
-    let geo = {}
+
      navigator.geolocation.getCurrentPosition(pos => {
+       console.log(pos);
       const crd = pos.coords
-      const posit = {
+      let geo = {
         lat: crd.latitude,
         lon: crd.longitude
       }
-      setPosition(posit)
-      geo = posit
+      dispatch({
+        type: 'SET_POSITION',
+        payload: geo
+      })
+      // setPosition(geo)
+      console.log(state.position);
       console.log('position success');
-      console.log(posit);
-      return posit
+
+      getWeather(geo)
+
 
     }, (err) => {
       console.log('position error');
       console.log(err);
-      setPosition({})
+      dispatch({
+        type: 'SET_POSITION',
+        payload: {}
+      })
+      // setPosition({})
     }, { 
       enableHighAccuracy: true,
-      timeout: 5000,
-      maximumAge: 0
+      timeout: 50000,
+      maximumAge: 5000
     })
 
-    return geo
   }
 
   function onChangeCity(e) {
-    setInpCity(e.target.value)
+    // setInpCity(e.target.value)
+    dispatch({
+      type: 'SET_INPUT_CITY',
+      payload: e.target.value
+    })
+    
   }
 
-  async function getWeather() {
-    const pos = getGeolocation()
-    console.log(pos);
+  async function getWeather(location = {}) {
     const options = {
       method: 'GET',
       url: 'https://api.openweathermap.org/data/2.5/forecast',
@@ -62,55 +138,102 @@ function App() {
         
       }
     };
-    console.log('inpCity', inpCity);
-    console.log('pos', pos);
-    if (inpCity){
-      options.params.q = inpCity
-    } else if(position){
-      options.params.lon = position.lon
-      options.params.lat = position.lat
+
+    if (state.inpCity){
+      options.params.q = state.inpCity
+    } else if(state.position.lon){
+      options.params.lon = state.position.lon
+      options.params.lat = state.position.lat
+
+    } else if(location.lon){
+      options.params.lon = location.lon
+      options.params.lat = location.lat
     } else{
       options.params.q = 'Moscow'
     }
 
     axios.request(options).then(res => {
       console.log(res.data);
+      let dt = res.data.list[0].dt
+      let weather = res.data.list[0].weather[0]
       let temp = res.data.list[0].main.temp
-      if (inpCity) {
-        setCity(inpCity)
+
+      weather.dt = dt
+
+      if (state.inpCity) {
+
+        dispatch({
+          type: 'SET_CITY',
+          payload: state.inpCity
+        })
+        
       } else {
-        setCity(res.data.city.name)
+
+        dispatch({
+          type: 'SET_CITY',
+          payload: res.data.city.name
+        })
       }
-      setTemperature(toCelcius(temp))
+
+      dispatch({
+        type: 'SET_WEATHER',
+        payload: weather
+      })
+
+      dispatch({
+        type: 'SET_TEMPERATURE',
+        payload: toCelcius(temp)
+      })
+
     }).catch(error => {
       console.error('error');
-      console.error(error);
-      setCity('Not Found')
-      setTemperature(0)
+      
+      // dispatch({
+      //   type: 'SET_CITY',
+      //   payload: 'Not Found'
+      // })
+
+      
     });
   }
 
+
+
   useEffect(() => {
-    getWeather()
-  }, [inpCity])
-
-
+    getGeolocation()
+    // getWeather()
+  }, [state.inpCity])
 
   return (
     <div className="wrapper">
       <div className="window">
-        <input value={inpCity}
+        <input value={state.inpCity}
          onChange={onChangeCity}
           placeholder='ГОРОД'
            type="text"
             className="input__city" />
         <div className="city">
-          {city}
+          {state.city}
         </div>
         <div className="temperature">
-          {temperature}
+          <AnimatedNumber
+            animateToNumber={state.temperature}
+            animationType={"random"}
+          />
         </div>
+        {Object.keys(state.weather).length > 1 ? 
+        (<div className="weath">
+          <div className="icon">
+            <img src={getIcon(state.weather)} alt="" />
+          </div>
+          <div className="description">
+            {state.weather.description}
+          </div>
+        </div>) : ''}
+        
+        
       </div>
+
     </div>
   )
 }
