@@ -85,44 +85,44 @@ function App() {
   function getGeolocation() {
 
     if ("geolocation" in navigator){
-      console.log('geo true');
+      navigator.geolocation.getCurrentPosition(pos => {
+        console.log(pos);
+       const crd = pos.coords
+       let geo = {
+         lat: crd.latitude,
+         lon: crd.longitude
+       }
+       dispatch({
+         type: 'SET_POSITION',
+         payload: geo
+       })
+       // setPosition(geo)
+       console.log(state.position);
+       console.log('position success');
+ 
+       getWeather(geo)
+ 
+ 
+     }, (err) => {
+       console.log('position error');
+       console.log(err);
+       dispatch({
+         type: 'SET_POSITION',
+         payload: {}
+       })
+       getWeather()
+       // setPosition({})
+     }, { 
+       enableHighAccuracy: true,
+       timeout: 50000,
+       maximumAge: 5000
+     })
     } else {
       console.log('geo false');
-
+      getWeather()
     }
 
-     navigator.geolocation.getCurrentPosition(pos => {
-       console.log(pos);
-      const crd = pos.coords
-      let geo = {
-        lat: crd.latitude,
-        lon: crd.longitude
-      }
-      dispatch({
-        type: 'SET_POSITION',
-        payload: geo
-      })
-      // setPosition(geo)
-      console.log(state.position);
-      console.log('position success');
-
-      getWeather(geo)
-
-
-    }, (err) => {
-      console.log('position error');
-      console.log(err);
-      dispatch({
-        type: 'SET_POSITION',
-        payload: {}
-      })
-      getWeather({})
-      // setPosition({})
-    }, { 
-      enableHighAccuracy: true,
-      timeout: 50000,
-      maximumAge: 5000
-    })
+     
 
   }
 
