@@ -32,10 +32,17 @@ export default (state, action) => {
           city: action.payload?.city,
         },
       };
+
     case 'SET_WEATHER':
       return {
         ...state,
         weather: action.payload,
+      };
+
+    case 'SET_FORECAST':
+      return {
+        ...state,
+        forecast: action.payload,
       };
 
     default:

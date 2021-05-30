@@ -1,10 +1,11 @@
-import { useEffect, useReducer, useState } from "react";
+import { useEffect, useReducer} from "react";
 import axios from "axios";
 import reducer from './reducer'
 
-import AnimatedNumber from "react-animated-numbers"
-
 import './scss/App.scss'
+
+import { Weather } from "./components";
+import { toCelcius } from "./components/func";
 
 
 
@@ -16,74 +17,15 @@ function App() {
     inpCity: '',
     position: {},
     isLoading: {},
-    weather: {
-    }
+    weather: {},
+    forecast: []
   })
 
-  function getIcon(data) {
-    const hours = new Date(data.dt).getHours()
-    let path = './img/weather_icons/animated/'
+ 
 
-    if (hours < 20 && hours >= 6) {
-      switch (data.main) {
-        case 'Thunderstorm':
-          return path + 'thunder.svg'
-      
-        case 'Drizzle':
-          return path + 'rainy-4.svg'
-      
-        case 'Rain':
-          return path + 'rainy-6.svg'
-      
-        case 'Snow':
-          return path + 'snowy-5.svg'
-      
-        case 'Clear':
-          return path + 'day.svg'
-      
-        case 'Clouds':
-          return path + 'cloudy.svg'
-      
-        default:
-          return ''
-      }
-    } else{
-      switch (data.main) {
-        case 'Thunderstorm':
-          return path + 'thunder.svg'
-      
-        case 'Drizzle':
-          return path + 'rainy-4.svg'
-      
-        case 'Rain':
-          return path + 'rainy-6.svg'
-      
-        case 'Snow':
-          return path + 'snowy-5.svg'
-      
-        case 'Clear':
-          return path + 'night.svg'
-      
-        case 'Clouds':
-          return path + 'cloudy-night-3.svg'
-      
-        default:
-          return ''
-      }
-    }
-
-    
-    
-  }
-  
-
-  function toCelcius(temp) {
-    if (!temp || typeof temp !== 'number') return 0
-    return Math.round(temp - 273.15);
-  }
 
   function getGeolocation() {
-
+    console.log('check geo');
     if ("geolocation" in navigator){
       navigator.geolocation.getCurrentPosition(pos => {
         console.log(pos);
@@ -161,8 +103,10 @@ function App() {
     }
 
     axios.request(options).then(res => {
-      console.log(res.data);
+      // console.log(res.data);
       let dt = res.data.list[0].dt
+      let forecast = res.data.list.slice(0,10)
+      // console.log(forecast);
       let weather = res.data.list[0].weather[0]
       let temp = res.data.list[0].main.temp
 
@@ -187,6 +131,10 @@ function App() {
         type: 'SET_WEATHER',
         payload: weather
       })
+      dispatch({
+        type: 'SET_FORECAST',
+        payload: forecast
+      })
 
       dispatch({
         type: 'SET_TEMPERATURE',
@@ -206,38 +154,30 @@ function App() {
   }
 
 
+/* 
+  FIXME: Constantly requests geolocation
+*/
 
   useEffect(() => {
     getGeolocation()
-    // getWeather()
+  }, [])
+
+  useEffect(() => {
+    getWeather(state.position)
   }, [state.inpCity])
+
 
   return (
     <div className="wrapper">
       <div className="window">
         <input value={state.inpCity}
-         onChange={onChangeCity}
+          onChange={onChangeCity}
           placeholder='ГОРОД'
-           type="text"
-            className="input__city" />
-        <div className="city">
-          {state.city}
-        </div>
-        <div className="temperature">
-          <AnimatedNumber
-            animateToNumber={state.temperature}
-            animationType={"random"}
-          />
-        </div>
-        {Object.keys(state.weather).length > 1 ? 
-        (<div className="weath">
-          <div className="icon">
-            <img src={getIcon(state.weather)} alt="" />
-          </div>
-          <div className="description">
-            {state.weather.description}
-          </div>
-        </div>) : ''}
+          type="text"
+          className="input__city"
+        />
+        
+        <Weather city={state.city} temperature={state.temperature} weather={state.weather} forecast={state.forecast} />
         
         
       </div>
