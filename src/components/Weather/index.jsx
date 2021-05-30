@@ -5,7 +5,7 @@ import { City, Temperature} from "../index";
 const Weather = memo(({city, temperature, weather, forecast}) => {
   function getIcon(data) {
     const hours = new Date(data.dt).getHours()
-    let path = 'react-weather/img/weather_icons/animated/'
+    let path = 'img/weather_icons/animated/'
 
     if (hours < 20 && hours >= 6) {
       switch (data.main) {
